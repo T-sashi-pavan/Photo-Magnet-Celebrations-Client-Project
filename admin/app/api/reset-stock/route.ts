@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import mongoose from 'mongoose';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // This route drops the stock collection and recreates it with new schema
 export async function POST(req: NextRequest) {
   try {

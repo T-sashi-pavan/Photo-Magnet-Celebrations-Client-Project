@@ -3,6 +3,9 @@ import connectDB from '@/lib/mongodb';
 import Stock from '@/models/Stock';
 import jwt from 'jsonwebtoken';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 function verifyAdmin(req: NextRequest) {

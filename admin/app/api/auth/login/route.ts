@@ -4,6 +4,9 @@ import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export async function POST(req: NextRequest) {

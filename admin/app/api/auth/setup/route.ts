@@ -4,6 +4,9 @@ import Admin from '@/models/Admin';
 import Stock from '@/models/Stock';
 import bcrypt from 'bcryptjs';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 // This route is ONLY for initial setup - should be disabled in production
 export async function POST(req: NextRequest) {
   try {

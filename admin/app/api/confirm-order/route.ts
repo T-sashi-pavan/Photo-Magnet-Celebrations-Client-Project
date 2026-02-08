@@ -4,6 +4,9 @@ import Order from '@/models/Order';
 import { sendCustomerConfirmationEmail } from '@/lib/email';
 import { sendCustomerConfirmationSMS } from '@/lib/sms';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
