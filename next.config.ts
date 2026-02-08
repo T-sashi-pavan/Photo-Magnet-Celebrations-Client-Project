@@ -13,15 +13,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Reduce size by removing source maps in production
   productionBrowserSourceMaps: false,
-  // Exclude admin folder from build
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push({
-        'admin': 'commonjs admin'
-      });
-    }
-    return config;
-  },
+  // Enable Turbopack configuration (Next.js 16 default)
+  turbopack: {},
 };
 
 export default nextConfig;
