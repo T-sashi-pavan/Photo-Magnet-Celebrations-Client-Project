@@ -52,9 +52,9 @@ export default function ImageCropper({ image, aspectRatio, onCropComplete }: Ima
       />
       
       {/* Zoom Control - Positioned at bottom to avoid grid overlap */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-white/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border-2 border-gray-300">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-stone-800/95 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg border-2 border-amber-500/30">
         <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold text-gray-700">Zoom</span>
+          <span className="text-sm font-semibold text-amber-200">Zoom</span>
           <input
             type="range"
             min={1}
@@ -64,7 +64,7 @@ export default function ImageCropper({ image, aspectRatio, onCropComplete }: Ima
             onChange={(e) => setZoom(Number(e.target.value))}
             className="w-32 h-2 accent-amber-600 cursor-pointer"
           />
-          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded">{zoom.toFixed(1)}x</span>
+          <span className="text-xs font-bold text-amber-300 bg-amber-600/20 px-2 py-1 rounded">{zoom.toFixed(1)}x</span>
         </div>
       </div>
     </div>

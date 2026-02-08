@@ -132,7 +132,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
   const finalTotal = total - discount;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-8">
+    <div className="bg-white rounded-md border border-gray-200 p-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h2>
       
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -144,7 +144,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             type="text"
             value={formData.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-3 border rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               errors.name ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="Rajesh Kumar"
@@ -160,7 +160,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             type="tel"
             value={formData.whatsapp}
             onChange={(e) => handleChange('whatsapp', e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-3 border rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               errors.whatsapp ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="9876543210"
@@ -176,7 +176,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             type="email"
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="rajesh@example.com"
           />
         </div>
@@ -189,7 +189,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             value={formData.address}
             onChange={(e) => handleChange('address', e.target.value)}
             rows={3}
-            className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-3 border rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
               errors.address ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="H.No 12-34, Jubilee Hills, Hyderabad"
@@ -206,7 +206,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
               type="text"
               value={formData.pincode}
               onChange={(e) => handleChange('pincode', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 errors.pincode ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="500034"
@@ -221,7 +221,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             <select
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-md text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                 errors.state ? 'border-red-500' : 'border-gray-300'
               }`}
             >
@@ -269,19 +269,19 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
                     placeholder="e.g., sis123"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     maxLength={6}
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-all"
+                    className="px-6 py-2 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 transition-all"
                   >
                     Apply
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md">
                   <div className="flex items-center gap-2">
                     <span className="text-green-700 font-semibold">✓ {appliedCoupon.toUpperCase()}</span>
                     <span className="text-sm text-green-600">(50% OFF)</span>
@@ -289,7 +289,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="text-sm text-red-600 hover:text-red-800 font-semibold"
+                    className="text-sm text-red-600 hover:text-red-700 font-semibold"
                   >
                     Remove
                   </button>
@@ -318,7 +318,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
             )}
 
             {/* Final Total */}
-            <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-200">
+            <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-300">
               <span>Final Total</span>
               <span>₹{finalTotal}</span>
             </div>
@@ -328,7 +328,7 @@ export default function CheckoutForm({ cartItems, onSubmit, calculateTotals, isP
         <button
           type="submit"
           disabled={isProcessing}
-          className="w-full px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-bold text-lg hover:from-amber-700 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-full px-6 py-4 bg-gray-900 text-white rounded-md font-semibold text-lg hover:bg-gray-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isProcessing ? 'Processing...' : `Pay ₹${finalTotal}`}
         </button>

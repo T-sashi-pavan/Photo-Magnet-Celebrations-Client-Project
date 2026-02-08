@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import CheckoutForm from '@/components/CheckoutForm';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { useToast } from '@/components/ToastProvider';
 import { isServiceableState, calculateDeliveryCharge } from '@/lib/products';
 
@@ -119,6 +120,45 @@ export default function CheckoutPage() {
           const verifyData = await verifyResponse.json();
 
           if (verifyData.status === 'SUCCESS') {
+            // Create order in database and send notifications
+            try {
+              const { subtotal, deliveryCharge, total } = calculateTotals(formData.state);
+              const appliedCoupon = (window as any).appliedCoupon || null;
+              const discount = (window as any).couponDiscount || 0;
+              
+              // For square products, withStand should be null (no stand concept)
+              const productType = cartItems[0].category;
+              const withStand = productType === 'square' ? null : ((cartItems[0] as any).withStand || false);
+              
+              await fetch('/api/orders/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  customerName: formData.name,
+                  whatsapp: formData.whatsapp,
+                  email: formData.email,
+                  address: formData.address,
+                  pincode: formData.pincode,
+                  state: formData.state,
+                  productType: productType,
+                  orientation: (cartItems[0] as any).orientation,
+                  withStand: withStand,
+                  quantity: cartItems[0].quantity,
+                  pricePerUnit: cartItems[0].price / cartItems[0].quantity,
+                  totalPrice: subtotal,
+                  deliveryCharge: deliveryCharge,
+                  couponApplied: appliedCoupon,
+                  discount: discount,
+                  finalAmount: total,
+                  croppedImageUrl: cartItems[0].croppedImageUrl,
+                  paymentId: verifyData.payment_id || orderId,
+                }),
+              });
+            } catch (orderError) {
+              console.error('Failed to create order record:', orderError);
+              // Don't fail the payment flow, just log the error
+            }
+
             showToast('Payment successful! Order confirmed.', 'success');
             if (typeof window !== 'undefined') {
               (window as any).cartItems = [];
@@ -148,7 +188,7 @@ export default function CheckoutPage() {
             <p className="text-gray-600 mb-6">Add some items to your cart to proceed</p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg font-semibold hover:from-amber-700 hover:to-orange-700 shadow-md"
+              className="px-6 py-3 bg-gray-900 text-white rounded-md font-semibold hover:bg-gray-800 shadow-sm"
             >
               Continue Shopping
             </button>
@@ -159,24 +199,24 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50 to-orange-50">
+    <div className="min-h-screen bg-gray-50">
       <Header cartItemCount={cartItems.length} onCartClick={() => router.back()} />
       
       <div className="py-8">
         <div className="max-w-4xl mx-auto px-4">
         {/* Breadcrumb */}
-        <div className="mb-6 text-sm text-gray-700">
-          <span className="cursor-pointer hover:text-amber-700 font-medium" onClick={() => router.push('/')}>Home</span>
+        <div className="mb-6 text-sm text-gray-600">
+          <span className="cursor-pointer hover:text-gray-900 font-medium" onClick={() => router.push('/')}>Home</span>
           <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:text-amber-700 font-medium" onClick={() => router.back()}>Cart</span>
+          <span className="cursor-pointer hover:text-gray-900 font-medium" onClick={() => router.back()}>Cart</span>
           <span className="mx-2">/</span>
-          <span className="text-amber-800 font-bold">Checkout</span>
+          <span className="text-gray-900 font-bold">Checkout</span>
         </div>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
         {/* Cart Summary */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-md border border-gray-200 p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
           <div className="space-y-3">
             {cartItems.map((item, index) => (
@@ -184,7 +224,7 @@ export default function CheckoutPage() {
                 <img
                   src={item.croppedImageUrl}
                   alt={item.productName}
-                  className="w-16 h-16 object-cover rounded-lg"
+                  className="w-16 h-16 object-cover rounded-md"
                 />
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-900">{item.productName}</h4>
@@ -205,6 +245,8 @@ export default function CheckoutPage() {
         />
       </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
