@@ -29,12 +29,20 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 10000, // 10 seconds
+      socketTimeoutMS: 45000, // 45 seconds
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('✅ MongoDB Connected Successfully');
-      return mongoose;
-    });
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        console.log('✅ MongoDB Connected Successfully');
+        return mongoose;
+      })
+      .catch((err) => {
+        console.error('❌ MongoDB Connection Error:', err.message);
+        cached.promise = null;
+        throw err;
+      });
   }
 
   try {
