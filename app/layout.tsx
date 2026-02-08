@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Photo Magnets - Custom Fridge Magnets",
-  description: "Create custom photo magnets with your favorite memories",
+  title: "Photo Magnet Celebrations - Custom Fridge Magnets",
+  description: "Create custom photo magnets with your favorite memories. Perfect for any occasion!",
+  icons: {
+    icon: '/icon.jpg',
+  },
 };
 
 export default function RootLayout({
@@ -26,15 +30,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/logo.png" type="image/png" />
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

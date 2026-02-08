@@ -5,8 +5,10 @@ import CheckoutForm from '@/components/CheckoutForm';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CustomerReviews from '@/components/CustomerReviews';
 import { useToast } from '@/components/ToastProvider';
 import { isServiceableState, calculateDeliveryCharge } from '@/lib/products';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface CartItem {
   productId: string;
@@ -36,6 +38,8 @@ declare global {
 export default function CheckoutPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
@@ -180,15 +184,15 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={`min-h-screen ${isDark ? 'bg-[#141414]' : 'bg-gray-50'}`}>
         <Header cartItemCount={0} onCartClick={() => {}} />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Add some items to your cart to proceed</p>
+            <h2 className={`text-2xl font-bold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-4`}>Your cart is empty</h2>
+            <p className={`${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'} mb-6`}>Add some items to your cart to proceed</p>
             <button
               onClick={() => router.push('/')}
-              className="px-6 py-3 bg-gray-900 text-white rounded-md font-semibold hover:bg-gray-800 shadow-sm"
+              className={`px-6 py-3 ${isDark ? 'bg-[#f0f0f0] text-[#141414] hover:bg-[#dcdcdc]' : 'bg-gray-900 text-white hover:bg-gray-800'} rounded-md font-semibold shadow-lg`}
             >
               Continue Shopping
             </button>
@@ -199,38 +203,38 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${isDark ? 'bg-[#141414]' : 'bg-gray-50'}`}>
       <Header cartItemCount={cartItems.length} onCartClick={() => router.back()} />
       
       <div className="py-8">
         <div className="max-w-4xl mx-auto px-4">
         {/* Breadcrumb */}
-        <div className="mb-6 text-sm text-gray-600">
-          <span className="cursor-pointer hover:text-gray-900 font-medium" onClick={() => router.push('/')}>Home</span>
+        <div className={`mb-6 text-sm ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
+          <span className={`cursor-pointer ${isDark ? 'hover:text-[#f0f0f0]' : 'hover:text-gray-900'} font-medium`} onClick={() => router.push('/')}>Home</span>
           <span className="mx-2">/</span>
-          <span className="cursor-pointer hover:text-gray-900 font-medium" onClick={() => router.back()}>Cart</span>
+          <span className={`cursor-pointer ${isDark ? 'hover:text-[#f0f0f0]' : 'hover:text-gray-900'} font-medium`} onClick={() => router.back()}>Cart</span>
           <span className="mx-2">/</span>
-          <span className="text-gray-900 font-bold">Checkout</span>
+          <span className={`${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} font-bold`}>Checkout</span>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 className={`text-3xl font-bold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-8`}>Checkout</h1>
 
         {/* Cart Summary */}
-        <div className="bg-white rounded-md border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+        <div className={`${isDark ? 'bg-[#1a1a1a] border-[#2a2a2a]' : 'bg-white border-gray-200'} rounded-md border p-6 mb-6`}>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-4`}>Order Summary</h2>
           <div className="space-y-3">
             {cartItems.map((item, index) => (
-              <div key={index} className="flex items-center gap-4 pb-3 border-b border-gray-200 last:border-0">
+              <div key={index} className={`flex items-center gap-4 pb-3 ${isDark ? 'border-[#2a2a2a]' : 'border-gray-200'} border-b last:border-0`}>
                 <img
                   src={item.croppedImageUrl}
                   alt={item.productName}
-                  className="w-16 h-16 object-cover rounded-md"
+                  className={`w-16 h-16 object-cover rounded-md border ${isDark ? 'border-[#2a2a2a]' : 'border-gray-200'}`}
                 />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{item.productName}</h4>
-                  <p className="text-sm text-gray-600">{item.quantity} pieces</p>
+                  <h4 className={`font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'}`}>{item.productName}</h4>
+                  <p className={`text-sm ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>{item.quantity} pieces</p>
                 </div>
-                <div className="font-bold text-gray-900">₹{item.price}</div>
+                <div className={`font-bold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'}`}>₹{item.price}</div>
               </div>
             ))}
           </div>
@@ -245,6 +249,8 @@ export default function CheckoutPage() {
         />
       </div>
       </div>
+
+      <CustomerReviews />
 
       <Footer />
     </div>
