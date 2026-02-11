@@ -71,9 +71,70 @@ export default function CheckoutPage() {
     setIsProcessingPayment(true);
 
     try {
-      const { total } = calculateTotals(formData.state);
+      const { total, subtotal, deliveryCharge } = calculateTotals(formData.state);
+      
+      // Check if TEST_MODE is enabled
+      const isTestMode = process.env.NEXT_PUBLIC_TEST_MODE === 'true';
+      
+      if (isTestMode) {
+        console.log('🧪 TEST MODE ENABLED - Simulating payment flow');
+        
+        // Create mock order
+        const mockOrderId = `MOCK_${Date.now()}`;
+        
+        // Simulate payment delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Create order in database
+        try {
+          const appliedCoupon = (window as any).appliedCoupon || null;
+          const discount = (window as any).couponDiscount || 0;
+          
+          const productType = cartItems[0].category;
+          const withStand = productType === 'square' ? null : ((cartItems[0] as any).withStand || false);
+          
+          await fetch('/api/orders/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customerName: formData.name,
+              whatsapp: formData.whatsapp,
+              email: formData.email,
+              address: formData.address,
+              pincode: formData.pincode,
+              state: formData.state,
+              productType: productType,
+              orientation: (cartItems[0] as any).orientation,
+              withStand: withStand,
+              quantity: cartItems[0].quantity,
+              pricePerUnit: cartItems[0].price / cartItems[0].quantity,
+              totalPrice: subtotal,
+              deliveryCharge: deliveryCharge,
+              couponApplied: appliedCoupon,
+              discount: discount,
+              finalAmount: total,
+              croppedImageUrl: cartItems[0].croppedImageUrl,
+              paymentId: mockOrderId,
+              paymentStatus: 'MOCK_SUCCESS',
+            }),
+          });
+          
+          showToast('🧪 TEST MODE: Order created successfully! (No payment charged)', 'success');
+          if (typeof window !== 'undefined') {
+            (window as any).cartItems = [];
+          }
+          setCartItems([]);
+          setTimeout(() => router.push('/?payment=success'), 2000);
+        } catch (orderError) {
+          console.error('Failed to create test order:', orderError);
+          showToast('Failed to create test order', 'error');
+        }
+        
+        setIsProcessingPayment(false);
+        return;
+      }
 
-      // Create Cashfree order
+      // Real Cashfree payment flow
       const orderResponse = await fetch('/api/cashfree/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -216,6 +277,21 @@ export default function CheckoutPage() {
           <span className="mx-2">/</span>
           <span className={`${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} font-bold`}>Checkout</span>
         </div>
+
+        {/* Test Mode Banner */}
+        {process.env.NEXT_PUBLIC_TEST_MODE === 'true' && (
+          <div className="mb-6 bg-yellow-500/20 border-2 border-yellow-500 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🧪</span>
+              <div>
+                <h3 className="font-bold text-yellow-600 dark:text-yellow-400">TEST MODE ACTIVE</h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  No real payment will be charged. Orders will be created for testing purposes only.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <h1 className={`text-3xl font-bold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-8`}>Checkout</h1>
 

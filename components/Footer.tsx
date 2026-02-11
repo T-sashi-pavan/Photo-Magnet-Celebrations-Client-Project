@@ -58,8 +58,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/checkout" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
-                  Checkout
+                <Link href="/contact" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -82,15 +82,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className={`flex items-start gap-2 ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
                 <Phone size={16} className={`mt-0.5 flex-shrink-0 ${isDark ? 'text-[#dcdcdc]' : 'text-gray-500'}`} />
-                <span>+91 733-077-5225</span>
+                <span>+91 9491620772</span>
               </li>
               <li className={`flex items-start gap-2 ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
                 <Mail size={16} className={`mt-0.5 flex-shrink-0 ${isDark ? 'text-[#dcdcdc]' : 'text-gray-500'}`} />
-                <span>sashipavan111111@gmail.com</span>
+                <span>photomagnetcelebrations@gmail.com</span>
               </li>
               <li className={`flex items-start gap-2 ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
                 <MapPin size={16} className={`mt-0.5 flex-shrink-0 ${isDark ? 'text-[#dcdcdc]' : 'text-gray-500'}`} />
-                <span>Hyderabad, Telangana, India</span>
+                <span>Nagaralu, Andhra Pradesh</span>
               </li>
             </ul>
           </div>
@@ -102,7 +102,10 @@ export default function Footer() {
             <p className={`${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'} text-sm text-center md:text-left`}>
               © {new Date().getFullYear()} Photo Magnet Celebrations. All rights reserved.
             </p>
-            <div className="flex gap-6 text-sm">
+            <div className="flex flex-wrap gap-4 md:gap-6 text-sm justify-center md:justify-end">
+              <Link href="/contact" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
+                Contact Us
+              </Link>
               <Link href="/privacy" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
                 Privacy Policy
               </Link>
