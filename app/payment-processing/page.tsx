@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-export default function PaymentProcessing() {
+function PaymentProcessingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { theme } = useTheme();
@@ -256,5 +256,24 @@ export default function PaymentProcessing() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentProcessing() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header cartItemCount={0} onCartClick={() => {}} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading payment details...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <PaymentProcessingContent />
+    </Suspense>
   );
 }
