@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ToastProvider } from '@/components/ToastProvider';
 
 export const metadata: Metadata = {
   title: 'Photo Magnet Celebrations - Admin Panel',
@@ -20,7 +21,9 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
       </head>
       <body className="bg-gradient-to-br from-stone-900 via-neutral-900 to-stone-900 min-h-screen">
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

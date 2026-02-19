@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Update order status to confirmed
-    order.orderStatus = 'confirmed';
+    // Update order status to preparing
+    order.orderStatus = 'preparing';
     order.customerConfirmationSent = true;
     order.updatedAt = new Date();
     await order.save();

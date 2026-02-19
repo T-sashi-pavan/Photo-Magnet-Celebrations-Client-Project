@@ -85,15 +85,16 @@ export default function CheckoutPage() {
         // Simulate payment delay
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Create order in database
-        try {
-          const appliedCoupon = (window as any).appliedCoupon || null;
-          const discount = (window as any).couponDiscount || 0;
+        // Create orders in database for ALL cart items
+        const appliedCoupon = (window as any).appliedCoupon || null;
+        const discount = (window as any).couponDiscount || 0;
+        const createdOrderIds: string[] = [];
+        
+        for (const item of cartItems) {
+          const productType = item.category;
+          const withStand = productType === 'square' ? null : ((item as any).withStand || false);
           
-          const productType = cartItems[0].category;
-          const withStand = productType === 'square' ? null : ((cartItems[0] as any).withStand || false);
-          
-          await fetch('/api/orders/create', {
+          const mockOrderResponse = await fetch('/api/orders/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -104,33 +105,33 @@ export default function CheckoutPage() {
               pincode: formData.pincode,
               state: formData.state,
               productType: productType,
-              orientation: (cartItems[0] as any).orientation,
+              orientation: (item as any).orientation,
               withStand: withStand,
-              quantity: cartItems[0].quantity,
-              pricePerUnit: cartItems[0].price / cartItems[0].quantity,
-              totalPrice: subtotal,
+              quantity: item.quantity,
+              pricePerUnit: item.price / item.quantity,
+              totalPrice: subtotal / cartItems.length,
               deliveryCharge: deliveryCharge,
               couponApplied: appliedCoupon,
-              discount: discount,
-              finalAmount: total,
-              croppedImageUrl: cartItems[0].croppedImageUrl,
+              discount: discount / cartItems.length,
+              finalAmount: total / cartItems.length,
+              croppedImageUrl: item.croppedImageUrl,
               paymentId: mockOrderId,
               paymentStatus: 'MOCK_SUCCESS',
             }),
           });
           
-          showToast('🧪 TEST MODE: Order created successfully! (No payment charged)', 'success');
-          if (typeof window !== 'undefined') {
-            (window as any).cartItems = [];
-          }
-          setCartItems([]);
-          setTimeout(() => router.push('/?payment=success'), 2000);
-        } catch (orderError) {
-          console.error('Failed to create test order:', orderError);
-          showToast('Failed to create test order', 'error');
+          const mockOrderData = await mockOrderResponse.json();
+          createdOrderIds.push(mockOrderData.orderId || mockOrderId);
         }
         
+        showToast(`🧪 TEST MODE: ${createdOrderIds.length} order(s) created successfully! (No payment charged)`, 'success');
+        if (typeof window !== 'undefined') {
+          (window as any).cartItems = [];
+          localStorage.removeItem('cartItems');
+        }
+        setCartItems([]);
         setIsProcessingPayment(false);
+        setTimeout(() => router.push(`/order-success?orderId=${createdOrderIds[0]}`), 2000);
         return;
       }
 
@@ -157,6 +158,56 @@ export default function CheckoutPage() {
 
       const { orderId, paymentSessionId } = orderData;
 
+      // Store ALL cart items data in localStorage for payment callback processing
+      const appliedCoupon = (window as any).appliedCoupon || null;
+      const discount = (window as any).couponDiscount || 0;
+
+      const orderItems = cartItems.map(item => {
+        // Map category to correct productType for Order model
+        let productType: 'square' | 'rectangle';
+        let withStand: boolean | null = null;
+        
+        if (item.category === 'square') {
+          productType = 'square';
+          withStand = null; // Square never has stand
+        } else if (item.category === 'rectangle-stand') {
+          productType = 'rectangle';
+          withStand = true;
+        } else if (item.category === 'rectangle-no-stand') {
+          productType = 'rectangle';
+          withStand = false;
+        } else {
+          // Fallback for any other category
+          productType = item.category.includes('rectangle') ? 'rectangle' : 'square';
+          withStand = item.category.includes('stand') ? true : null;
+        }
+        
+        return {
+          customerName: formData.name,
+          whatsapp: formData.whatsapp,
+          email: formData.email,
+          address: formData.address,
+          pincode: formData.pincode,
+          state: formData.state,
+          productType: productType,
+          orientation: (item as any).orientation,
+          withStand: withStand,
+          quantity: item.quantity,
+          pricePerUnit: item.price / item.quantity,
+          croppedImageUrl: item.croppedImageUrl,
+        };
+      });
+
+      localStorage.setItem('pendingOrder', JSON.stringify({
+        items: orderItems,
+        totalPrice: subtotal,
+        deliveryCharge: deliveryCharge,
+        couponApplied: appliedCoupon,
+        discount: discount,
+        finalAmount: total,
+        cashfreeOrderId: orderId,
+      }));
+
       // Load Cashfree SDK
       const cashfree = await window.Cashfree({
         mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === 'production' ? 'production' : 'sandbox',
@@ -164,7 +215,7 @@ export default function CheckoutPage() {
 
       const checkoutOptions = {
         paymentSessionId: paymentSessionId,
-        returnUrl: `${window.location.origin}/?payment=success&order_id=${orderId}`,
+        returnUrl: `${window.location.origin}/payment-processing?cashfree_order_id=${orderId}&payment_status=success`,
       };
 
       cashfree.checkout(checkoutOptions).then(async (result: any) => {
@@ -195,7 +246,7 @@ export default function CheckoutPage() {
               const productType = cartItems[0].category;
               const withStand = productType === 'square' ? null : ((cartItems[0] as any).withStand || false);
               
-              await fetch('/api/orders/create', {
+              const createOrderResponse = await fetch('/api/orders/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -219,17 +270,22 @@ export default function CheckoutPage() {
                   paymentId: verifyData.payment_id || orderId,
                 }),
               });
+
+              const orderData = await createOrderResponse.json();
+              const createdOrderId = orderData.orderId;
+
+              showToast('Payment successful! Order confirmed.', 'success');
+              if (typeof window !== 'undefined') {
+                (window as any).cartItems = [];
+                localStorage.removeItem('cartItems');
+              }
+              setCartItems([]);
+              setTimeout(() => router.push(`/order-success?orderId=${createdOrderId}`), 2000);
             } catch (orderError) {
               console.error('Failed to create order record:', orderError);
-              // Don't fail the payment flow, just log the error
+              showToast('Payment successful but order creation failed. Please contact support.', 'error');
+              setTimeout(() => router.push('/'), 2000);
             }
-
-            showToast('Payment successful! Order confirmed.', 'success');
-            if (typeof window !== 'undefined') {
-              (window as any).cartItems = [];
-            }
-            setCartItems([]);
-            setTimeout(() => router.push('/?payment=success'), 2000);
           } else {
             showToast('Payment verification failed. Please contact support.', 'error');
           }
@@ -238,7 +294,6 @@ export default function CheckoutPage() {
     } catch (error: any) {
       console.error('Checkout error:', error);
       showToast(error.message || 'Failed to process payment. Please try again.', 'error');
-    } finally {
       setIsProcessingPayment(false);
     }
   };

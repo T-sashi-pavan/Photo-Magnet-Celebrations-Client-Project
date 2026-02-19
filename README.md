@@ -43,9 +43,9 @@ The `.env.local` file is already configured with your Cloudinary credentials. Yo
 
 ```env
 # Cloudinary (Already configured)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dlujb9uqv
-CLOUDINARY_API_KEY=647741526875949
-CLOUDINARY_API_SECRET=6fsBwWr6oK-U9ObI5rI5KMBm0Uw
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
 # Razorpay (You need to add these)
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id

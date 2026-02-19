@@ -46,6 +46,9 @@ export default function Header({ cartItemCount, onCartClick }: HeaderProps) {
             <Link href="/products/rectangle" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-700 hover:text-gray-900'} font-medium transition-colors`}>
               Rectangle Magnets
             </Link>
+            <Link href="/my-orders" className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0]' : 'text-gray-700 hover:text-gray-900'} font-medium transition-colors`}>
+              Track Orders
+            </Link>
           </nav>
 
           {/* Mobile Menu Button, Theme Toggle & Cart */}
@@ -106,6 +109,13 @@ export default function Header({ cartItemCount, onCartClick }: HeaderProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Rectangle Magnets
+              </Link>
+              <Link 
+                href="/my-orders" 
+                className={`${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0] hover:bg-[#1a1a1a]' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'} font-medium transition-colors py-2 px-4 rounded-md`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Track Orders
               </Link>
             </nav>
           </div>

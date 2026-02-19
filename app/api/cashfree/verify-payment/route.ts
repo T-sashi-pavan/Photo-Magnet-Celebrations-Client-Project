@@ -26,9 +26,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
+        status: isValid ? 'SUCCESS' : 'FAILED',
         message: isValid ? 'Payment verified successfully' : 'Payment not completed',
         isValid,
         orderStatus,
+        payment_id: response.data.cf_order_id || response.data.order_id,
         paymentDetails: response.data,
       },
       { status: 200 }

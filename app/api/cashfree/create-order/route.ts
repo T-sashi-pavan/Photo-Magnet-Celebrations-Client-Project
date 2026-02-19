@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
         customer_phone: customerPhone,
       },
       order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment-success?order_id={order_id}`,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/payment-processing?cashfree_order_id={order_id}&payment_status=success`,
+        payment_methods: 'cc,dc,upi,nb,app', // Valid Cashfree payment methods (excludes Cardless EMI)
       },
     };
 

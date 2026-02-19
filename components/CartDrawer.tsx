@@ -1,8 +1,6 @@
 'use client';
 
 import { X, ShoppingBag, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { validateCoupon, calculateDiscount } from '@/lib/coupons';
 import { useTheme } from './ThemeProvider';
 
 interface CartItem {
@@ -24,46 +22,10 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose, cartItems, onRemoveItem, onCheckout }: CartDrawerProps) {
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
-  const [couponError, setCouponError] = useState('');
-  const [usedCoupons, setUsedCoupons] = useState<string[]>([]);
-
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-  const discount = appliedCoupon ? calculateDiscount(subtotal, 50) : 0;
-  const total = subtotal - discount;
-
-  const handleApplyCoupon = () => {
-    setCouponError('');
-
-    if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
-      return;
-    }
-
-    if (appliedCoupon) {
-      setCouponError('A coupon has already been applied');
-      return;
-    }
-
-    const validation = validateCoupon(couponCode.toLowerCase().trim(), usedCoupons);
-
-    if (validation.isValid) {
-      setAppliedCoupon(couponCode.toLowerCase().trim());
-      setUsedCoupons([...usedCoupons, couponCode.toLowerCase().trim()]);
-      setCouponCode('');
-    } else {
-      setCouponError(validation.error || 'Invalid coupon code');
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponError('');
-  };
 
   if (!isOpen) return null;
 
@@ -139,62 +101,15 @@ export default function CartDrawer({ isOpen, onClose, cartItems, onRemoveItem, o
         {/* Footer - Summary & Checkout */}
         {cartItems.length > 0 && (
           <div className={`${isDark ? 'border-[#2a2a2a] bg-[#0d0d0d]' : 'border-gray-200 bg-gray-50'} border-t p-6 space-y-4`}>
-            {/* Coupon Section */}
-            <div>
-              <label className={`block text-sm font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-2`}>
-                Have a Coupon?
-              </label>
-              {!appliedCoupon ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    placeholder="Enter code (e.g., sis123)"
-                    className={`flex-1 px-4 py-2 ${isDark ? 'border-[#2a2a2a] bg-[#1a1a1a] text-[#f0f0f0] placeholder:text-[#c8c8c8]' : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400'} border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none`}
-                    maxLength={6}
-                  />
-                  <button
-                    onClick={handleApplyCoupon}
-                    className={`px-6 py-2 ${isDark ? 'bg-green-600 text-[#f0f0f0] hover:bg-green-500' : 'bg-green-600 text-white hover:bg-green-500'} rounded-md font-semibold transition-all shadow-lg`}
-                  >
-                    Apply
-                  </button>
-                </div>
-              ) : (
-                <div className={`flex items-center justify-between p-3 ${isDark ? 'bg-green-950/50 border-green-800' : 'bg-green-50 border-green-200'} border rounded-md`}>
-                  <div>
-                    <span className={`${isDark ? 'text-green-400' : 'text-green-700'} font-semibold`}>✓ {appliedCoupon.toUpperCase()}</span>
-                    <span className={`text-sm ${isDark ? 'text-green-500' : 'text-green-600'} ml-2`}>(50% OFF)</span>
-                  </div>
-                  <button
-                    onClick={handleRemoveCoupon}
-                    className={`text-sm ${isDark ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'} font-semibold`}
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-              {couponError && (
-                <p className={`mt-2 text-sm ${isDark ? 'text-red-400' : 'text-red-600'}`}>✕ {couponError}</p>
-              )}
-            </div>
-
             {/* Price Summary */}
             <div className="space-y-2">
               <div className={`flex justify-between ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
                 <span>Subtotal</span>
                 <span className="font-semibold">₹{subtotal}</span>
               </div>
-              {appliedCoupon && (
-                <div className={`flex justify-between ${isDark ? 'text-green-400' : 'text-green-600'} font-semibold`}>
-                  <span>Discount (50%)</span>
-                  <span>- ₹{discount}</span>
-                </div>
-              )}
               <div className={`flex justify-between text-xl font-bold ${isDark ? 'text-[#f0f0f0] border-[#2a2a2a]' : 'text-gray-900 border-gray-200'} pt-2 border-t`}>
                 <span>Total</span>
-                <span>₹{total}</span>
+                <span>₹{subtotal}</span>
               </div>
             </div>
 

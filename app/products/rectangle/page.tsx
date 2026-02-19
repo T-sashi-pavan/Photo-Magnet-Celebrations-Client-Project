@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Minus, Upload, Check } from 'lucide-react';
+import { Plus, Minus, Check } from 'lucide-react';
 import { PRODUCTS, calculateCustomPrice, getPricePerUnit } from '@/lib/products';
-import ImageCropper from '@/components/ImageCropper';
 import { getCroppedImg, uploadToCloudinary } from '@/lib/imageUtils';
 import { useToast } from '@/components/ToastProvider';
 import { useTheme } from '@/components/ThemeProvider';
@@ -12,6 +11,7 @@ import Header from '@/components/Header';
 import CartDrawer from '@/components/CartDrawer';
 import Footer from '@/components/Footer';
 import CustomerReviews from '@/components/CustomerReviews';
+import ImageUploadSlot from '@/components/ImageUploadSlot';
 import dynamic from 'next/dynamic';
 
 const CircularGallery = dynamic(() => import('@/components/CircularGallery'), {
@@ -26,6 +26,12 @@ interface CartItem {
   price: number;
   croppedImageUrl: string;
   category: string;
+}
+
+interface ImageSlot {
+  rawImage: string;
+  croppedPixels: any;
+  confirmed: boolean;
 }
 
 export default function RectangleProductPage() {
@@ -50,14 +56,34 @@ export default function RectangleProductPage() {
   const [withStand, setWithStand] = useState(true);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [quantity, setQuantity] = useState(1);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [imageSlots, setImageSlots] = useState<ImageSlot[]>([{ rawImage: '', croppedPixels: null, confirmed: false }]);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Sync with global cart
+  // Update image slots when quantity changes
+  useEffect(() => {
+    setImageSlots(prev => {
+      const newSlots = Array(quantity).fill(null).map((_, index) => 
+        prev[index] || { rawImage: '', croppedPixels: null, confirmed: false }
+      );
+      return newSlots;
+    });
+  }, [quantity]);
+
+  // Load cart from localStorage and sync with global cart
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setCartItems((window as any).cartItems || []);
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCartItems(parsedCart);
+          (window as any).cartItems = parsedCart;
+        } catch (error) {
+          console.error('Failed to load cart:', error);
+        }
+      } else {
+        setCartItems((window as any).cartItems || []);
+      }
     }
   }, []);
 
@@ -68,55 +94,83 @@ export default function RectangleProductPage() {
   const aspectRatio = orientation === 'portrait' ? '3:4' : '4:3';
   const dimensions = orientation === 'portrait' ? '2.7" W × 3.8" L' : '3.8" W × 2.7" L';
 
+  // Convert AspectRatio type to number
+  const getAspectRatioNumber = (ratio: string): number => {
+    switch (ratio) {
+      case '1:1': return 1;
+      case '3:4': return 0.75;
+      case '4:3': return 1.33;
+      default: return 1;
+    }
+  };
+
   const price = calculateCustomPrice(product, quantity);
   const pricePerUnit = getPricePerUnit(product, quantity);
   const standPrice = 40;
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setUploadedImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImageConfirm = (slotIndex: number, imageData: string, croppedPixels: any) => {
+    if (!imageData) {
+      // Clear the slot
+      setImageSlots(prev => {
+        const updated = [...prev];
+        updated[slotIndex] = { rawImage: '', croppedPixels: null, confirmed: false };
+        return updated;
+      });
+      return;
     }
+
+    setImageSlots(prev => {
+      const updated = [...prev];
+      updated[slotIndex] = { rawImage: imageData, croppedPixels, confirmed: true };
+      return updated;
+    });
   };
 
+  const allImagesConfirmed = imageSlots.every(slot => slot.confirmed);
+
   const handleAddToCart = async () => {
-    if (!uploadedImage || !croppedAreaPixels) {
-      showToast('Please upload and crop your photo first', 'error');
+    if (!allImagesConfirmed) {
+      showToast('Please upload all images for the selected quantity', 'error');
       return;
     }
 
     setIsUploading(true);
     try {
-      const croppedBlob = await getCroppedImg(uploadedImage, croppedAreaPixels);
-      const imageUrl = await uploadToCloudinary(croppedBlob);
+      // Process and upload all images
+      const uploadPromises = imageSlots.map(async (slot) => {
+        const croppedBlob = await getCroppedImg(slot.rawImage, slot.croppedPixels);
+        const imageUrl = await uploadToCloudinary(croppedBlob);
+        return imageUrl;
+      });
 
-      const newItem = {
+      const imageUrls = await Promise.all(uploadPromises);
+
+      // Create separate cart items for each image
+      const newItems = imageUrls.map((imageUrl, index) => ({
         productId: product.id,
         productName: product.name,
         packageDetails: `${product.description} - ${orientation === 'portrait' ? 'Portrait (2.7" × 3.8")' : 'Landscape (3.8" × 2.7")'}`,
-        quantity,
-        price,
+        quantity: 1, // Each item is 1 piece with its own image
+        price: pricePerUnit,
         croppedImageUrl: imageUrl,
         category: product.category
-      };
+      }));
 
-      const updatedCart = [...cartItems, newItem];
+      const updatedCart = [...cartItems, ...newItems];
       setCartItems(updatedCart);
       if (typeof window !== 'undefined') {
         (window as any).cartItems = updatedCart;
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
       }
 
-      showToast('Added to cart successfully!', 'success');
-      setUploadedImage(null);
-      setCroppedAreaPixels(null);
+      showToast(`Added ${quantity} item(s) to cart successfully!`, 'success');
+      
+      // Reset to initial state
       setQuantity(1);
+      setImageSlots([{ rawImage: '', croppedPixels: null, confirmed: false }]);
     } catch (error) {
       console.error('Error:', error);
-      showToast('Failed to process image. Please try again.', 'error');
+      showToast('Failed to process images. Please try again.', 'error');
     } finally {
       setIsUploading(false);
     }
@@ -127,6 +181,7 @@ export default function RectangleProductPage() {
     setCartItems(updatedCart);
     if (typeof window !== 'undefined') {
       (window as any).cartItems = updatedCart;
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
     }
   };
 
@@ -209,39 +264,31 @@ export default function RectangleProductPage() {
             </div>
 
             <div className={`${isDark ? 'bg-[#1a1a1a] border-[#2a2a2a]' : 'bg-white border-gray-200'} rounded-lg shadow-xl p-6 border`}>
-              <h2 className={`text-xl font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-4`}>Upload Your Photo</h2>
+              <h2 className={`text-xl font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-4`}>Upload Your Photos</h2>
               
-              {!uploadedImage ? (
-                <div className={`border-2 border-dashed ${isDark ? 'border-[#2a2a2a] bg-[#0d0d0d] hover:border-[#3a3a3a] hover:bg-[#141414]' : 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'} rounded-lg p-12 text-center transition-colors`}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer block">
-                    <Upload size={48} className={`mx-auto ${isDark ? 'text-[#c8c8c8]' : 'text-gray-400'} mb-4`} />
-                    <p className={`text-lg font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-2`}>Click to upload</p>
-                    <p className={`text-sm ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>or drag and drop</p>
-                    <p className={`text-xs ${isDark ? 'text-[#c8c8c8]' : 'text-gray-500'} mt-2`}>PNG, JPG, GIF up to 10MB</p>
-                  </label>
+              <div className="mb-4">
+                <div className={`text-sm ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'} mb-2`}>
+                  Upload Progress: <span className="font-semibold">{imageSlots.filter(s => s.confirmed).length} / {quantity}</span> uploaded
                 </div>
-              ) : (
-                <div>
-                  <ImageCropper
-                    image={uploadedImage}
-                    aspectRatio={aspectRatio as any}
-                    onCropComplete={setCroppedAreaPixels}
-                  />
-                  <button
-                    onClick={() => setUploadedImage(null)}
-                    className={`mt-4 w-full px-4 py-2 text-sm font-semibold ${isDark ? 'text-[#c8c8c8] hover:text-[#f0f0f0] hover:bg-[#2a2a2a]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'} rounded-lg transition-colors`}
-                  >
-                    Change Image
-                  </button>
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {imageSlots.map((slot, index) => (
+                    <ImageUploadSlot
+                      key={index}
+                      slotIndex={index}
+                      aspectRatio={getAspectRatioNumber(aspectRatio)}
+                      onConfirm={handleImageConfirm}
+                      confirmedImage={slot.confirmed ? slot.rawImage : null}
+                      isDark={isDark}
+                    />
+                  ))}
                 </div>
-              )}
+              </div>
+              
+              <div className={`mt-4 p-3 ${isDark ? 'bg-[#0d0d0d] border-[#2a2a2a]' : 'bg-blue-50 border-blue-200'} border rounded-md`}>
+                <p className={`text-xs ${isDark ? 'text-[#c8c8c8]' : 'text-gray-600'}`}>
+                  💡 <strong>Tip:</strong> Upload one image for each quantity. Each image will be a separate magnet.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -378,7 +425,7 @@ export default function RectangleProductPage() {
 
               {/* Quantity Selector */}
               <div className="mb-6">
-                <label className={`block font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-3`}>Select Quantity:</label>
+                <label className={`block font-semibold ${isDark ? 'text-[#f0f0f0]' : 'text-gray-900'} mb-3`}>Select Quantity (Max 12):</label>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -391,14 +438,16 @@ export default function RectangleProductPage() {
                   <input
                     type="number"
                     min="1"
+                    max="12"
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => setQuantity(Math.min(12, Math.max(1, parseInt(e.target.value) || 1)))}
                     className={`w-24 h-12 text-center text-xl font-bold ${isDark ? 'text-[#f0f0f0] bg-[#0d0d0d] border-[#2a2a2a]' : 'text-gray-900 bg-white border-gray-200'} border rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:outline-none`}
                   />
                   
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className={`w-12 h-12 rounded-md border ${isDark ? 'border-[#2a2a2a] bg-[#0d0d0d] text-[#f0f0f0] hover:border-[#3a3a3a] hover:bg-[#1a1a1a]' : 'border-gray-200 bg-white text-gray-900 hover:border-gray-300 hover:bg-gray-50'} flex items-center justify-center transition-all`}
+                    onClick={() => setQuantity(Math.min(12, quantity + 1))}
+                    disabled={quantity >= 12}
+                    className={`w-12 h-12 rounded-md border ${isDark ? 'border-[#2a2a2a] bg-[#0d0d0d] text-[#f0f0f0] hover:border-[#3a3a3a] hover:bg-[#1a1a1a]' : 'border-gray-200 bg-white text-gray-900 hover:border-gray-300 hover:bg-gray-50'} flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
                   >
                     <Plus size={20} />
                   </button>
@@ -436,10 +485,15 @@ export default function RectangleProductPage() {
               {/* Add to Cart Button */}
               <button
                 onClick={handleAddToCart}
-                disabled={!uploadedImage || isUploading}
-                className={`w-full px-8 py-4 ${isDark ? 'bg-[#f0f0f0] text-[#141414] hover:bg-[#dcdcdc]' : 'bg-gray-900 text-white hover:bg-gray-800'} rounded-md font-semibold text-base transition-all shadow-lg hover:shadow-xl ${!uploadedImage || isUploading ? (isDark ? 'disabled:bg-[#2a2a2a] disabled:text-[#c8c8c8]' : 'disabled:bg-gray-300 disabled:text-gray-500') : ''} disabled:cursor-not-allowed`}
+                disabled={!allImagesConfirmed || isUploading}
+                className={`w-full px-8 py-4 ${isDark ? 'bg-[#f0f0f0] text-[#141414] hover:bg-[#dcdcdc]' : 'bg-gray-900 text-white hover:bg-gray-800'} rounded-md font-semibold text-base transition-all shadow-lg hover:shadow-xl ${!allImagesConfirmed || isUploading ? (isDark ? 'disabled:bg-[#2a2a2a] disabled:text-[#c8c8c8]' : 'disabled:bg-gray-300 disabled:text-gray-500') : ''} disabled:cursor-not-allowed`}
               >
-                {isUploading ? 'Processing...' : uploadedImage ? `Add to Cart - ₹${price}` : 'Upload Photo First'}
+                {isUploading 
+                  ? 'Processing...' 
+                  : allImagesConfirmed 
+                    ? `Add ${quantity} to Cart - ₹${price}` 
+                    : `Upload ${quantity} Photo${quantity > 1 ? 's' : ''} First (${imageSlots.filter(s => s.confirmed).length}/${quantity})`
+                }
               </button>
             </div>
           </div>

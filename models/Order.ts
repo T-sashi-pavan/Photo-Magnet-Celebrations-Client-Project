@@ -21,7 +21,7 @@ export interface IOrder extends Document {
   croppedImageUrl: string;
   paymentId: string;
   paymentStatus: 'pending' | 'success' | 'failed';
-  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  orderStatus: 'pending' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
   adminNotificationSent: boolean;
   customerConfirmationSent: boolean;
   createdAt: Date;
@@ -113,7 +113,7 @@ const OrderSchema: Schema = new Schema({
   },
   orderStatus: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'preparing', 'shipped', 'delivered', 'cancelled'],
     default: 'pending',
   },
   adminNotificationSent: {

@@ -53,7 +53,6 @@ export default function CustomerReviews() {
                 <video
                   src={videoUrl}
                   className="w-full h-full object-cover"
-                  autoPlay
                   loop
                   muted
                   playsInline

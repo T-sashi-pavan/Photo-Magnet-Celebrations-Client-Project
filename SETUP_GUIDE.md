@@ -27,7 +27,7 @@ npm install
 #### Frontend Environment (.env.local in root)
 ```env
 # MongoDB Atlas (shared with admin)
-MONGODB_URI=mongodb+srv://sessi111111_db_user:magnet@cluster0.qnuujtd.mongodb.net/photoMagnetCelebrations?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority&appName=Cluster0
 
 # Cashfree Payment Gateway
 NEXT_PUBLIC_CASHFREE_APP_ID=your_cashfree_app_id
@@ -40,7 +40,7 @@ NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 
 # Admin Panel URL (update after admin deployment)
 NEXT_PUBLIC_ADMIN_URL=http://localhost:3001
-NEXT_PUBLIC_FRONTEND_URL=https://photomagnetcelebrations.netlify.app
+NEXT_PUBLIC_FRONTEND_URL=https://your-frontend.netlify.app
 
 # Twilio SMS (for notifications)
 TWILIO_ACCOUNT_SID=your_twilio_sid
@@ -54,11 +54,11 @@ RESEND_API_KEY=your_resend_api_key
 #### Admin Panel Environment (admin/.env.local)
 ```env
 # MongoDB Atlas
-MONGODB_URI=mongodb+srv://sessi111111_db_user:magnet@cluster0.qnuujtd.mongodb.net/photoMagnetCelebrations?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database?retryWrites=true&w=majority&appName=Cluster0
 
 # Admin Credentials
-ADMIN_EMAIL=admin@photomagnetcelebrations.com
-ADMIN_PASSWORD=Admin@123456
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=YourSecurePassword
 
 # JWT Secret (CHANGE IN PRODUCTION!)
 JWT_SECRET=generate-strong-random-string-here-minimum-32-characters
@@ -67,17 +67,17 @@ JWT_SECRET=generate-strong-random-string-here-minimum-32-characters
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
 TWILIO_PHONE_NUMBER=your_twilio_phone_number
-ADMIN_PHONE_NUMBER=+917330775225
+ADMIN_PHONE_NUMBER=+1234567890
 
 # Email Configuration (Gmail SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=sashipavan111111@gmail.com
+SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your_gmail_app_password
-ADMIN_EMAIL_ADDRESS=sashipavan111111@gmail.com
+ADMIN_EMAIL_ADDRESS=admin@example.com
 
 # Frontend URL
-FRONTEND_URL=https://photomagnetcelebrations.netlify.app
+FRONTEND_URL=https://your-frontend.netlify.app
 ```
 
 ### Step 3: Initialize Database
@@ -240,7 +240,7 @@ Then add environment variables in Vercel dashboard.
 
 Your connection string is already set up:
 ```
-mongodb+srv://sessi111111_db_user:magnet@cluster0.qnuujtd.mongodb.net/photoMagnetCelebrations
+mongodb+srv://username:password@cluster.mongodb.net/database
 ```
 
 To manage database:
@@ -266,8 +266,8 @@ To manage database:
 
 ### Notifications
 - [ ] Place test order
-- [ ] Confirm SMS received at +917330775225
-- [ ] Confirm email received at sashipavan111111@gmail.com
+- [ ] Confirm SMS received at your admin phone
+- [ ] Confirm email received at your admin email
 - [ ] Test "Confirm Order" button in email
 - [ ] Verify customer receives confirmation
 
@@ -306,8 +306,8 @@ To manage database:
    - Stock automatically decreases
 
 2. **Admin Receives Notifications:**
-   - SMS to +917330775225
-   - Email to sashipavan111111@gmail.com
+   - SMS to admin phone number
+   - Email to admin email address
    - Email includes "Confirm Order" button
 
 3. **Admin Confirms Order:**
@@ -381,8 +381,8 @@ To manage database:
 ## 📞 Support
 
 **Developer Contact:**
-- Email: sashipavan111111@gmail.com  
-- Phone: +91 7330775225
+- Email: your-email@example.com  
+- Phone: +1 234 567 8900
 
 ## 🎯 Next Steps
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { isServiceableState, calculateDeliveryCharge } from '@/lib/products';
 import DomeGallery from '@/components/DomeGallery';
 import Header from '@/components/Header';
@@ -51,9 +51,32 @@ export default function Home() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { showToast } = useToast();
 
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCartItems(parsedCart);
+          (window as any).cartItems = parsedCart;
+        } catch (error) {
+          console.error('Failed to load cart from localStorage:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && cartItems.length >= 0) {
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      (window as any).cartItems = cartItems;
+    }
+  }, [cartItems]);
+
   // Store cart in window for cross-page access
   if (typeof window !== 'undefined') {
-    (window as any).cartItems = cartItems;
     (window as any).setCartItems = setCartItems;
   }
 

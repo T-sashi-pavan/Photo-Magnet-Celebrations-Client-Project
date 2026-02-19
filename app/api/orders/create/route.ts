@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Order created successfully',
-      orderId,
+      orderId: order.orderId,
+      order: order.toObject(),
     });
   } catch (error: any) {
     console.error('Create order error:', error);
